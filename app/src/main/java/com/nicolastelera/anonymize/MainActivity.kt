@@ -43,16 +43,18 @@ class MainActivity : AppCompatActivity() {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if (requestCode == REQUEST_TAKE_PHOTO && resultCode == Activity.RESULT_OK) {
-            imageView.setImage(getPicture())
+            blurViewGroup.setImage(getPicture())
         }
         super.onActivityResult(requestCode, resultCode, data)
     }
 
-    private fun createPhotoUri(): Uri = FileProvider.getUriForFile(
+    private fun createPhotoUri(): Uri {
+        return FileProvider.getUriForFile(
             this,
             FILE_PROVIDER_AUTHORITY,
             createImageFile()
-    )
+        )
+    }
 
     private fun createImageFile(): File {
         val timeStamp = SimpleDateFormat(DATE_FORMAT_PATTERN, Locale.FRANCE).format(Date())
@@ -67,11 +69,10 @@ class MainActivity : AppCompatActivity() {
         val bmOptions = BitmapFactory.Options().apply {
             inJustDecodeBounds = true
             BitmapFactory.decodeFile(currentPhotoPath, this)
-            val scaleFactor = outWidth / imageView.width
+            val scaleFactor = outWidth / blurViewGroup.width
             inJustDecodeBounds = false
             inSampleSize = scaleFactor
         }
-
         return BitmapFactory.decodeFile(currentPhotoPath, bmOptions)
     }
 }
