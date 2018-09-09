@@ -1,7 +1,8 @@
 package com.nicolastelera.anonymize
 
 import android.content.Context
-import android.graphics.*
+import android.graphics.Bitmap
+import android.graphics.Rect
 import android.renderscript.*
 import android.util.AttributeSet
 import android.view.View
@@ -20,15 +21,6 @@ class BlurViewGroup(context: Context, attrsSet: AttributeSet) : RelativeLayout(c
     private val rectangleList = mutableListOf<FaceRectangle>()
     private var srcBitmap: Bitmap? = null
 
-    private val paint = Paint().apply {
-        color = Color.RED
-        isAntiAlias = true
-        strokeWidth = 5f
-        style = Paint.Style.STROKE
-        strokeJoin = Paint.Join.ROUND
-        strokeCap = Paint.Cap.ROUND
-    }
-
     private val detector = FirebaseVision.getInstance().getVisionFaceDetector(
         FirebaseVisionFaceDetectorOptions.Builder()
             .setModeType(FirebaseVisionFaceDetectorOptions.FAST_MODE)
@@ -38,13 +30,6 @@ class BlurViewGroup(context: Context, attrsSet: AttributeSet) : RelativeLayout(c
             .setTrackingEnabled(true)
             .build()
     )
-
-    override fun onDraw(canvas: Canvas) {
-        super.onDraw(canvas)
-        rectangleList.forEach {
-            canvas.drawRect(it.bounds, paint)
-        }
-    }
 
     fun setImage(bitmap: Bitmap) {
         resetContainer()
