@@ -11,6 +11,7 @@ import android.widget.LinearLayout
 import android.widget.RelativeLayout
 import com.google.firebase.ml.vision.FirebaseVision
 import com.google.firebase.ml.vision.common.FirebaseVisionImage
+import com.google.firebase.ml.vision.face.FirebaseVisionFace
 import com.google.firebase.ml.vision.face.FirebaseVisionFaceDetectorOptions
 
 private data class FaceRectangle(val bounds: Rect, val rotationX: Float, val rotationY: Float)
@@ -20,6 +21,7 @@ class BlurViewGroup(context: Context, attrsSet: AttributeSet) : RelativeLayout(c
     private val imageView = BlurImageView()
     private val rectangleList = mutableListOf<FaceRectangle>()
     private var srcBitmap: Bitmap? = null
+    private var scaleFactor: Float = 0f
 
     private val detector = FirebaseVision.getInstance().getVisionFaceDetector(
         FirebaseVisionFaceDetectorOptions.Builder()
@@ -31,10 +33,13 @@ class BlurViewGroup(context: Context, attrsSet: AttributeSet) : RelativeLayout(c
             .build()
     )
 
-    fun setImage(bitmap: Bitmap) {
+    fun setImageToBlur(bitmap: Bitmap) {
         resetContainer()
-        srcBitmap = bitmap
-        imageView.setImageBitmap(bitmap)
+        with(bitmap) {
+            srcBitmap = this
+            imageView.updateImage()
+            scaleFactor = this@BlurViewGroup.width / width.toFloat()
+        }
         detectFaces()
     }
 
@@ -47,35 +52,37 @@ class BlurViewGroup(context: Context, attrsSet: AttributeSet) : RelativeLayout(c
     private fun detectFaces() {
         srcBitmap?.let { bitmap ->
             detector.detectInImage(FirebaseVisionImage.fromBitmap(bitmap))
-                .addOnSuccessListener {
-                    it.forEach { face ->
-                        with(face) {
-                            rectangleList.add(FaceRectangle(
-                                boundingBox,
-                                headEulerAngleY,
-                                headEulerAngleZ
-                            ))
-                        }
-                    }
-                    addRectangles()
-                }
-                .addOnFailureListener {
-                    // do nothing
-                }
+                .addOnSuccessListener { processDetectedFaces(it) }
         }
+    }
+
+    private fun processDetectedFaces(faces: List<FirebaseVisionFace>) {
+        faces.forEach { face ->
+            with(face) {
+                rectangleList.add(com.nicolastelera.anonymize.FaceRectangle(
+                    boundingBox,
+                    headEulerAngleY,
+                    headEulerAngleZ
+                ))
+            }
+        }
+        addRectangles()
     }
 
     private fun addRectangles() {
         rectangleList.forEach { rect ->
-            val view = View.inflate(context, R.layout.bordered_layout, null).apply {
-                x = rect.bounds.left.toFloat()
-                y = rect.bounds.top.toFloat()
-                layoutParams = LinearLayout.LayoutParams(rect.bounds.width(), rect.bounds.height())
-                setOnClickListener {
-                    imageView.applyBlur(rect.bounds)
+            View.inflate(context, R.layout.bordered_layout, null).apply {
+                with(rect.bounds) {
+                    x = left.toFloat() * scaleFactor
+                    y = top.toFloat() * scaleFactor
+                    layoutParams = LinearLayout.LayoutParams(
+                        (width() * scaleFactor).toInt(),
+                        (height() * scaleFactor).toInt()
+                    )
+                    setOnClickListener { imageView.applyBlur(this) }
                 }
+                addView(this)
             }
-            addView(view)
         }
     }
 
@@ -87,12 +94,16 @@ class BlurViewGroup(context: Context, attrsSet: AttributeSet) : RelativeLayout(c
             isFocusableInTouchMode = true
         }
 
+        fun updateImage() {
+            srcBitmap?.let { setImageBitmap(it) }
+        }
+
         fun applyBlur(bounds: Rect) {
-            srcBitmap?.let {
-                val output = Bitmap.createScaledBitmap(it, it.width, it.height, false)
+            srcBitmap?.let { src ->
+                val output = Bitmap.createScaledBitmap(src, src.width, src.height, false)
                 val rs = RenderScript.create(context)
                 val script = ScriptIntrinsicBlur.create(rs, Element.U8_4(rs))
-                val inAlloc = Allocation.createFromBitmap(rs, it,
+                val inAlloc = Allocation.createFromBitmap(rs, src,
                     Allocation.MipmapControl.MIPMAP_NONE, Allocation.USAGE_GRAPHICS_TEXTURE)
                 val outAlloc = Allocation.createFromBitmap(rs, output)
                 val launchOptions = with(bounds) {

@@ -43,7 +43,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if (requestCode == REQUEST_TAKE_PHOTO && resultCode == Activity.RESULT_OK) {
-            blurViewGroup.setImage(getPicture())
+            blurViewGroup.setImageToBlur(getPicture())
         }
         super.onActivityResult(requestCode, resultCode, data)
     }
