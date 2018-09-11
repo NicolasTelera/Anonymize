@@ -10,6 +10,7 @@ import android.os.Environment
 import android.provider.MediaStore
 import android.support.v4.content.FileProvider
 import android.support.v7.app.AppCompatActivity
+import android.view.View
 import kotlinx.android.synthetic.main.activity_main.*
 import java.io.File
 import java.text.SimpleDateFormat
@@ -31,7 +32,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        button.setOnClickListener {
+        pictureButton.setOnClickListener {
             with(Intent(MediaStore.ACTION_IMAGE_CAPTURE)) {
                 if (resolveActivity(packageManager) != null) {
                     putExtra(MediaStore.EXTRA_OUTPUT, createPhotoUri())
@@ -44,15 +45,16 @@ class MainActivity : AppCompatActivity() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if (requestCode == REQUEST_TAKE_PHOTO && resultCode == Activity.RESULT_OK) {
             blurViewGroup.setImageToBlur(getPicture())
+            saveButton.visibility = View.VISIBLE
         }
         super.onActivityResult(requestCode, resultCode, data)
     }
 
     private fun createPhotoUri(): Uri {
         return FileProvider.getUriForFile(
-            this,
-            FILE_PROVIDER_AUTHORITY,
-            createImageFile()
+                this,
+                FILE_PROVIDER_AUTHORITY,
+                createImageFile()
         )
     }
 

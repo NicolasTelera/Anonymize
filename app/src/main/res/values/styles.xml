@@ -1,5 +1,6 @@
 <resources>
     <style name="BorderedView">
         <item name="android:background">@drawable/border_background</item>
+        <item name="android:foreground">?attr/selectableItemBackgroundBorderless</item>
     </style>
 </resources>

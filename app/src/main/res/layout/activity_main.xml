@@ -3,28 +3,40 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_height="match_parent"
     android:layout_width="match_parent"
+    android:layout_height="match_parent"
     tools:context=".MainActivity">
 
     <com.nicolastelera.anonymize.BlurViewGroup
         android:id="@+id/blurViewGroup"
-        android:layout_height="0dp"
         android:layout_width="0dp"
-        app:layout_constraintBottom_toTopOf="@id/button"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toTopOf="@id/pictureButton"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_chainStyle="spread_inside"/>
+        app:layout_constraintVertical_chainStyle="spread_inside" />
 
     <Button
-        android:id="@+id/button"
-        android:layout_height="wrap_content"
+        android:id="@+id/pictureButton"
         android:layout_width="0dp"
+        android:layout_height="wrap_content"
         android:text="@string/take_picture"
+        app:layout_constraintBottom_toTopOf="@+id/saveButton"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/blurViewGroup" />
+
+    <Button
+        android:id="@+id/saveButton"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="@string/save_picture"
+        android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/blurViewGroup"/>
+        app:layout_constraintTop_toBottomOf="@id/pictureButton"
+        tools:visibility="visible" />
 
 </android.support.constraint.ConstraintLayout>

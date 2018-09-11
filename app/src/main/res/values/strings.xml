@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">Anonymize</string>
     <string name="take_picture">Take picture</string>
+    <string name="save_picture">Save Picture</string>
 </resources>
