@@ -40,7 +40,7 @@ allprojects {
         appCompat = "com.android.support:appcompat-v7:27.1.1"
         constraintLayout = "com.android.support.constraint:constraint-layout:1.1.2"
 
-        // Firebase
+        // Firebaseg
         firebaseCore = "com.google.firebase:firebase-core:16.0.1"
         firebaseVision = "com.google.firebase:firebase-ml-vision:17.0.0"
 
