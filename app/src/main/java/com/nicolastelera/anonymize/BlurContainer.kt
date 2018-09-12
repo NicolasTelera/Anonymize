@@ -3,6 +3,7 @@ package com.nicolastelera.anonymize
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Rect
+import android.graphics.drawable.BitmapDrawable
 import android.renderscript.*
 import android.util.AttributeSet
 import android.view.View
@@ -22,7 +23,7 @@ private data class FaceRectangle(
         var shouldBeBlurred: Boolean = false
 )
 
-class BlurViewGroup(context: Context, attrsSet: AttributeSet) : RelativeLayout(context, attrsSet) {
+class BlurContainer(context: Context, attrsSet: AttributeSet) : RelativeLayout(context, attrsSet) {
 
     private val imageView = BlurImageView()
     private val rectangleList = mutableListOf<FaceRectangle>()
@@ -39,12 +40,14 @@ class BlurViewGroup(context: Context, attrsSet: AttributeSet) : RelativeLayout(c
                     .build()
     )
 
+    fun getModifiedImage() = (imageView.drawable as BitmapDrawable).bitmap
+
     fun setImageToBlur(bitmap: Bitmap) {
         resetContainer()
         with(bitmap) {
             srcBitmap = this
             imageView.updateImage()
-            scaleFactor = this@BlurViewGroup.width / width.toFloat()
+            scaleFactor = this@BlurContainer.width / width.toFloat()
         }
         detectFaces()
     }
