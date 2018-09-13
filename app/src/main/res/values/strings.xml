@@ -4,4 +4,5 @@
     <string name="save_picture">Save Picture</string>
     <string name="picture_saved">Photo enregistrée !</string>
     <string name="picture_not_saved">Photo non enregistrée…</string>
+    <string name="import_picture">import picture</string>
 </resources>

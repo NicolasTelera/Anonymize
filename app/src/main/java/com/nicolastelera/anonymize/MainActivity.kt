@@ -10,6 +10,7 @@ import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
 import android.support.v7.app.AppCompatActivity
 import android.view.View
+import android.widget.Toast
 import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
@@ -63,6 +64,10 @@ class MainActivity : AppCompatActivity() {
                     startActivityForResult(this, REQUEST_TAKE_PHOTO)
                 }
             }
+        }
+
+        importButton.setOnClickListener {
+            Toast.makeText(this, "importe picture", Toast.LENGTH_SHORT).show()
         }
 
         saveButton.setOnClickListener {
