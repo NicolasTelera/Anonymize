@@ -40,7 +40,7 @@ class BlurContainer(context: Context, attrsSet: AttributeSet) : RelativeLayout(c
                     .build()
     )
 
-    fun getModifiedImage() = (imageView.drawable as BitmapDrawable).bitmap
+    fun getModifiedImage(): Bitmap = (imageView.drawable as BitmapDrawable).bitmap
 
     fun setImageToBlur(bitmap: Bitmap) {
         resetContainer()

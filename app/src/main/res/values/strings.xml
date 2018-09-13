@@ -2,4 +2,6 @@
     <string name="app_name">Anonymize</string>
     <string name="take_picture">Take picture</string>
     <string name="save_picture">Save Picture</string>
+    <string name="picture_saved">Photo enregistrée !</string>
+    <string name="picture_not_saved">Photo non enregistrée…</string>
 </resources>
