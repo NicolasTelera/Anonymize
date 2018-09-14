@@ -5,6 +5,7 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Environment
+import android.provider.MediaStore
 import android.support.v4.content.FileProvider
 import android.widget.Toast
 import java.io.File
@@ -32,6 +33,10 @@ class FileManager(private val context: Context) {
     )
 
     fun getPicture(targetWidth: Int): Bitmap {
+
+        //TODO
+        val uri = Uri.fromFile(File(currentPhotoPath))
+
         val bmOptions = BitmapFactory.Options().apply {
             inJustDecodeBounds = true
             BitmapFactory.decodeFile(currentPhotoPath, this)
@@ -40,6 +45,25 @@ class FileManager(private val context: Context) {
             inSampleSize = scaleFactor
         }
         return BitmapFactory.decodeFile(currentPhotoPath, bmOptions)
+    }
+
+    fun getOrientationFromUri(uri: Uri): Int {
+        val cursor = context.contentResolver.query(
+                uri,
+                arrayOf(MediaStore.Images.ImageColumns.ORIENTATION),
+                null,
+                null,
+                null
+        )
+
+        val orientation = with(cursor) {
+            if (columnCount != 1) return -1
+            moveToFirst()
+            getInt(0)
+        }
+
+        cursor.close()
+        return orientation
     }
 
     fun saveModifiedBitmap(bitmap: Bitmap) {

@@ -29,6 +29,7 @@ dependencies {
     // Support Libraries
     implementation parent.ext.appCompat
     implementation parent.ext.constraintLayout
+    implementation parent.ext.exifInterface
 
     // Firebase
     implementation parent.ext.firebaseCore

@@ -15,6 +15,13 @@ import com.google.firebase.ml.vision.common.FirebaseVisionImage
 import com.google.firebase.ml.vision.face.FirebaseVisionFace
 import com.google.firebase.ml.vision.face.FirebaseVisionFaceDetectorOptions
 
+/**
+ * TODO :
+ * - displayed blurring is a preview, apply same blur to original bitmap size when save
+ * - fix horizontal displaying when front camera
+ * - fix images scaling (ex : when 19:9)
+ */
+
 private data class FaceRectangle(
         val bounds: Rect,
         val rotationX: Float,
@@ -47,7 +54,7 @@ class BlurContainer(context: Context, attrsSet: AttributeSet) : RelativeLayout(c
         with(bitmap) {
             srcBitmap = this
             imageView.updateImage()
-            scaleFactor = this@BlurContainer.width / width.toFloat()
+            scaleFactor = this@BlurContainer.width.toFloat() / width.toFloat()
         }
         detectFaces()
     }

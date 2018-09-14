@@ -4,20 +4,28 @@ import android.Manifest
 import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.Matrix
 import android.os.Bundle
 import android.provider.MediaStore
+import android.support.media.ExifInterface
 import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
 import android.support.v7.app.AppCompatActivity
 import android.view.View
-import android.widget.Toast
 import kotlinx.android.synthetic.main.activity_main.*
+import android.R.attr.bitmap
+import android.net.Uri
+import android.opengl.ETC1.getHeight
+import android.opengl.ETC1.getWidth
 
 class MainActivity : AppCompatActivity() {
 
     companion object {
         private const val REQUEST_WRITE_EXTERNAL_STORAGE = 1664
         private const val REQUEST_TAKE_PHOTO = 1
+        private const val REQUEST_LOAD_PHOTO = 2
     }
 
     private val fileManager = FileManager(this)
@@ -30,9 +38,30 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        if (requestCode == REQUEST_TAKE_PHOTO && resultCode == Activity.RESULT_OK) {
-            blurViewGroup.setImageToBlur(fileManager.getPicture(blurViewGroup.width))
-            saveButton.visibility = View.VISIBLE
+        if (resultCode == Activity.RESULT_OK) {
+            when (requestCode) {
+                REQUEST_TAKE_PHOTO -> {
+                    val bitmap = fileManager.getPicture(blurViewGroup.width)
+                    updateViewWithImage(bitmap)
+                }
+                REQUEST_LOAD_PHOTO -> {
+                    data?.let {
+                        val inputStream = contentResolver.openInputStream(data.data)
+                        val src = BitmapFactory.decodeStream(inputStream)
+                        val scaleFactor = src.width.toFloat() / blurViewGroup.width.toFloat()
+                        val bitmap = Bitmap.createScaledBitmap(src, (src.width.toFloat() / scaleFactor).toInt(), (src.height.toFloat() / scaleFactor).toInt(), false)
+
+                        val orientation = fileManager.getOrientationFromUri(data.data)
+                        if (orientation <= 0) {
+                            updateViewWithImage(bitmap)
+                        }
+                        val matrix = Matrix()
+                        matrix.postRotate(orientation.toFloat())
+                        val bitmap1 = Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, false)
+                        updateViewWithImage(bitmap1)
+                    }
+                }
+            }
         }
         super.onActivityResult(requestCode, resultCode, data)
     }
@@ -67,11 +96,19 @@ class MainActivity : AppCompatActivity() {
         }
 
         importButton.setOnClickListener {
-            Toast.makeText(this, "importe picture", Toast.LENGTH_SHORT).show()
+            with(Intent(Intent.ACTION_PICK)) {
+                type = "image/*"
+                startActivityForResult(this, REQUEST_LOAD_PHOTO)
+            }
         }
 
         saveButton.setOnClickListener {
             fileManager.saveModifiedBitmap(blurViewGroup.getModifiedImage())
         }
+    }
+
+    private fun updateViewWithImage(bitmap: Bitmap) {
+        blurViewGroup.setImageToBlur(bitmap)
+        saveButton.visibility = View.VISIBLE
     }
 }
