@@ -1,8 +1,10 @@
 package com.nicolastelera.anonymize
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Matrix
 import android.net.Uri
 import android.os.Environment
 import android.provider.MediaStore
@@ -32,38 +34,34 @@ class FileManager(private val context: Context) {
             createImageFile()
     )
 
-    fun getPicture(targetWidth: Int): Bitmap {
+    fun getPictureFromPath(targetWidth: Int): Bitmap = getPictureFromUri(
+            Uri.fromFile(File(currentPhotoPath)),
+            targetWidth
+    )
 
-        //TODO
-        val uri = Uri.fromFile(File(currentPhotoPath))
+    fun getPictureFromUri(uri: Uri, targetWidth: Int): Bitmap {
+        val src = BitmapFactory.decodeStream(context.contentResolver.openInputStream(uri))
+        val orientation = getOrientationFromUri(uri)
 
-        val bmOptions = BitmapFactory.Options().apply {
-            inJustDecodeBounds = true
-            BitmapFactory.decodeFile(currentPhotoPath, this)
-            val scaleFactor = outWidth / targetWidth
-            inJustDecodeBounds = false
-            inSampleSize = scaleFactor
+        return if (orientation <= 0) {
+            val scaleFactor = src.width.toFloat() / targetWidth
+            Bitmap.createScaledBitmap(
+                    src,
+                    (src.width.toFloat() / scaleFactor).toInt(),
+                    (src.height.toFloat() / scaleFactor).toInt(),
+                    false
+            )
+        } else {
+            val matrix = Matrix().apply { postRotate(orientation.toFloat()) }
+            val srcBitmap = Bitmap.createBitmap(src, 0, 0, src.width, src.height, matrix, false)
+            val scaleFactor = srcBitmap.width.toFloat() / targetWidth
+            Bitmap.createScaledBitmap(
+                    srcBitmap,
+                    (srcBitmap.width.toFloat() / scaleFactor).toInt(),
+                    (srcBitmap.height.toFloat() / scaleFactor).toInt(),
+                    false
+            )
         }
-        return BitmapFactory.decodeFile(currentPhotoPath, bmOptions)
-    }
-
-    fun getOrientationFromUri(uri: Uri): Int {
-        val cursor = context.contentResolver.query(
-                uri,
-                arrayOf(MediaStore.Images.ImageColumns.ORIENTATION),
-                null,
-                null,
-                null
-        )
-
-        val orientation = with(cursor) {
-            if (columnCount != 1) return -1
-            moveToFirst()
-            getInt(0)
-        }
-
-        cursor.close()
-        return orientation
     }
 
     fun saveModifiedBitmap(bitmap: Bitmap) {
@@ -91,5 +89,25 @@ class FileManager(private val context: Context) {
         val image = File.createTempFile(currentPhotoName, JPG_EXTENSION, storageDir)
         currentPhotoPath = image.absolutePath
         return image
+    }
+
+    @SuppressLint("Recycle")
+    private fun getOrientationFromUri(uri: Uri): Int {
+        val cursor = context.contentResolver.query(
+                uri,
+                arrayOf(MediaStore.Images.ImageColumns.ORIENTATION),
+                null,
+                null,
+                null
+        ) ?: return 0
+
+        val orientation = with(cursor) {
+            if (columnCount != 1) return -1
+            moveToFirst()
+            getInt(0)
+        }
+
+        cursor.close()
+        return orientation
     }
 }

@@ -5,20 +5,13 @@ import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.graphics.Matrix
 import android.os.Bundle
 import android.provider.MediaStore
-import android.support.media.ExifInterface
 import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
 import android.support.v7.app.AppCompatActivity
 import android.view.View
 import kotlinx.android.synthetic.main.activity_main.*
-import android.R.attr.bitmap
-import android.net.Uri
-import android.opengl.ETC1.getHeight
-import android.opengl.ETC1.getWidth
 
 class MainActivity : AppCompatActivity() {
 
@@ -39,29 +32,14 @@ class MainActivity : AppCompatActivity() {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if (resultCode == Activity.RESULT_OK) {
-            when (requestCode) {
-                REQUEST_TAKE_PHOTO -> {
-                    val bitmap = fileManager.getPicture(blurViewGroup.width)
-                    updateViewWithImage(bitmap)
+            val bitmap = when (requestCode) {
+                REQUEST_TAKE_PHOTO -> fileManager.getPictureFromPath(blurViewGroup.width)
+                REQUEST_LOAD_PHOTO -> data?.let {
+                    fileManager.getPictureFromUri(data.data, blurViewGroup.width)
                 }
-                REQUEST_LOAD_PHOTO -> {
-                    data?.let {
-                        val inputStream = contentResolver.openInputStream(data.data)
-                        val src = BitmapFactory.decodeStream(inputStream)
-                        val scaleFactor = src.width.toFloat() / blurViewGroup.width.toFloat()
-                        val bitmap = Bitmap.createScaledBitmap(src, (src.width.toFloat() / scaleFactor).toInt(), (src.height.toFloat() / scaleFactor).toInt(), false)
-
-                        val orientation = fileManager.getOrientationFromUri(data.data)
-                        if (orientation <= 0) {
-                            updateViewWithImage(bitmap)
-                        }
-                        val matrix = Matrix()
-                        matrix.postRotate(orientation.toFloat())
-                        val bitmap1 = Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, false)
-                        updateViewWithImage(bitmap1)
-                    }
-                }
+                else -> null
             }
+            bitmap?.let { updateViewWithImage(it) }
         }
         super.onActivityResult(requestCode, resultCode, data)
     }
@@ -88,10 +66,8 @@ class MainActivity : AppCompatActivity() {
     private fun initButtonsListeners() {
         pictureButton.setOnClickListener {
             with(Intent(MediaStore.ACTION_IMAGE_CAPTURE)) {
-                if (resolveActivity(packageManager) != null) {
-                    putExtra(MediaStore.EXTRA_OUTPUT, fileManager.createPhotoUri())
-                    startActivityForResult(this, REQUEST_TAKE_PHOTO)
-                }
+                putExtra(MediaStore.EXTRA_OUTPUT, fileManager.createPhotoUri())
+                startActivityForResult(this, REQUEST_TAKE_PHOTO)
             }
         }
 
