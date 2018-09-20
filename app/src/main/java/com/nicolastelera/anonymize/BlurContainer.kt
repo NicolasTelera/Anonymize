@@ -18,8 +18,7 @@ import com.google.firebase.ml.vision.face.FirebaseVisionFaceDetectorOptions
 /**
  * TODO :
  * - displayed blurring is a preview, apply same blur to original bitmap size when save
- * - fix horizontal displaying when front camera
- * - fix images scaling (ex : when 19:9)
+ * - round blurred part
  */
 
 private data class FaceRectangle(
