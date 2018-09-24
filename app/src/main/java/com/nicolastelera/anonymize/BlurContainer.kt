@@ -27,7 +27,9 @@ private data class FaceRectangle(
         val rotationY: Float,
         var isApplied: Boolean = false,
         var shouldBeBlurred: Boolean = false
-)
+) {
+    fun shouldBeApplied() = !isApplied && shouldBeBlurred
+}
 
 class BlurContainer(context: Context, attrsSet: AttributeSet) : RelativeLayout(context, attrsSet) {
 
@@ -74,7 +76,7 @@ class BlurContainer(context: Context, attrsSet: AttributeSet) : RelativeLayout(c
     private fun processDetectedFaces(faces: List<FirebaseVisionFace>) {
         faces.forEach { face ->
             with(face) {
-                rectangleList.add(com.nicolastelera.anonymize.FaceRectangle(
+                rectangleList.add(FaceRectangle(
                         boundingBox,
                         headEulerAngleY,
                         headEulerAngleZ
@@ -120,7 +122,7 @@ class BlurContainer(context: Context, attrsSet: AttributeSet) : RelativeLayout(c
             srcBitmap?.let { srcBitmap ->
                 var src = srcBitmap.copy(Bitmap.Config.ARGB_8888, false)
                 rectangleList.forEach {
-                    if (!it.isApplied && it.shouldBeBlurred) src = applyBlur(src, it.bounds, 5)
+                    if (it.shouldBeApplied()) src = applyBlur(src, it.bounds, 5)
                 }
                 setImageBitmap(src)
             }
