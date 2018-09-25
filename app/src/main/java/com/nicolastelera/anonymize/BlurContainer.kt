@@ -2,6 +2,7 @@ package com.nicolastelera.anonymize
 
 import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.Canvas
 import android.graphics.Rect
 import android.graphics.drawable.BitmapDrawable
 import android.renderscript.*
@@ -36,7 +37,6 @@ class BlurContainer(context: Context, attrsSet: AttributeSet) : RelativeLayout(c
     private val imageView = BlurImageView()
     private val rectangleList = mutableListOf<FaceRectangle>()
     private var srcBitmap: Bitmap? = null
-    private var scaleFactor: Float = 0f
 
     private val detector = FirebaseVision.getInstance().getVisionFaceDetector(
             FirebaseVisionFaceDetectorOptions.Builder()
@@ -55,15 +55,13 @@ class BlurContainer(context: Context, attrsSet: AttributeSet) : RelativeLayout(c
         with(bitmap) {
             srcBitmap = this
             imageView.updateImage()
-            scaleFactor = this@BlurContainer.width.toFloat() / width.toFloat()
         }
-        detectFaces()
     }
 
     private fun resetContainer() {
         rectangleList.clear()
         removeAllViews()
-        addView(imageView)
+        addView(imageView.apply { isProcessed = false })
     }
 
     private fun detectFaces() {
@@ -87,6 +85,7 @@ class BlurContainer(context: Context, attrsSet: AttributeSet) : RelativeLayout(c
     }
 
     private fun addRectangles() {
+        val scaleFactor = imageView.width.toFloat() / this@BlurContainer.width.toFloat()
         rectangleList.forEach { rect ->
             View.inflate(context, R.layout.bordered_layout, null).apply {
                 with(rect.bounds) {
@@ -108,10 +107,20 @@ class BlurContainer(context: Context, attrsSet: AttributeSet) : RelativeLayout(c
 
     private inner class BlurImageView : ImageView(context) {
 
+        var isProcessed = false
+
         init {
             adjustViewBounds = true
             isFocusable = true
             isFocusableInTouchMode = true
+        }
+
+        override fun onDraw(canvas: Canvas?) {
+            super.onDraw(canvas)
+            if (!isProcessed) {
+                detectFaces()
+                isProcessed = true
+            }
         }
 
         fun updateImage() {
