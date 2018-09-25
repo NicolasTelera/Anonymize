@@ -15,6 +15,11 @@ import java.io.FileOutputStream
 import java.text.SimpleDateFormat
 import java.util.*
 
+/**
+ * TODO :
+ * - improve saving to deal with multiple taps on "save" and imported images
+ */
+
 class FileManager(private val context: Context) {
 
     companion object {

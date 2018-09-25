@@ -18,7 +18,7 @@ import com.google.firebase.ml.vision.face.FirebaseVisionFaceDetectorOptions
 
 /**
  * TODO :
- * - displayed blurring is a preview, apply same blur to original bitmap size when save
+ * - displayed blurred image is a preview, apply same blur to original bitmap size when save
  * - round blurred part
  */
 
