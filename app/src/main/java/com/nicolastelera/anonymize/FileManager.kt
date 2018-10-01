@@ -15,11 +15,6 @@ import java.io.FileOutputStream
 import java.text.SimpleDateFormat
 import java.util.*
 
-/**
- * TODO :
- * - improve saving to deal with multiple taps on "save" and imported images
- */
-
 class FileManager(private val context: Context) {
 
     companion object {
@@ -46,24 +41,24 @@ class FileManager(private val context: Context) {
 
     fun getPictureFromUri(uri: Uri, targetWidth: Int): Bitmap {
         val src = BitmapFactory.decodeStream(context.contentResolver.openInputStream(uri))
-        val orientation = getOrientationFromUri(uri)
+        return getOrientationFromUri(uri).let { orientation ->
+            if (orientation <= 0) createScaledBitmap(src, targetWidth)
+            else createRotatedBitmap(src, targetWidth, orientation)
+        }
+    }
 
-        return if (orientation <= 0) {
-            val scaleFactor = src.width.toFloat() / targetWidth
+    private fun createRotatedBitmap(src: Bitmap, targetWidth: Int, orientation: Int): Bitmap {
+        val matrix = Matrix().apply { postRotate(orientation.toFloat()) }
+        val srcBitmap = Bitmap.createBitmap(src, 0, 0, src.width, src.height, matrix, false)
+        return createScaledBitmap(srcBitmap, targetWidth)
+    }
+
+    private fun createScaledBitmap(src: Bitmap, targetWidth: Int): Bitmap {
+        return (src.width.toFloat() / targetWidth).let { scaleFactor ->
             Bitmap.createScaledBitmap(
                     src,
                     (src.width.toFloat() / scaleFactor).toInt(),
                     (src.height.toFloat() / scaleFactor).toInt(),
-                    false
-            )
-        } else {
-            val matrix = Matrix().apply { postRotate(orientation.toFloat()) }
-            val srcBitmap = Bitmap.createBitmap(src, 0, 0, src.width, src.height, matrix, false)
-            val scaleFactor = srcBitmap.width.toFloat() / targetWidth
-            Bitmap.createScaledBitmap(
-                    srcBitmap,
-                    (srcBitmap.width.toFloat() / scaleFactor).toInt(),
-                    (srcBitmap.height.toFloat() / scaleFactor).toInt(),
                     false
             )
         }

@@ -3,7 +3,7 @@ package com.nicolastelera.anonymize
 import android.Manifest
 import android.app.Activity
 import android.content.Intent
-import android.content.pm.PackageManager
+import android.content.pm.PackageManager.PERMISSION_GRANTED
 import android.graphics.Bitmap
 import android.os.Bundle
 import android.provider.MediaStore
@@ -19,6 +19,7 @@ class MainActivity : AppCompatActivity() {
         private const val REQUEST_WRITE_EXTERNAL_STORAGE = 1664
         private const val REQUEST_TAKE_PHOTO = 1
         private const val REQUEST_LOAD_PHOTO = 2
+        private const val TYPE_IMAGE = "image/*"
     }
 
     private val fileManager = FileManager(this)
@@ -45,17 +46,21 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun checkForUserPermission() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this,
                     arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
                     REQUEST_WRITE_EXTERNAL_STORAGE)
         }
     }
 
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+    override fun onRequestPermissionsResult(
+            requestCode: Int,
+            permissions: Array<out String>,
+            grantResults: IntArray
+    ) {
         when (requestCode) {
             REQUEST_WRITE_EXTERNAL_STORAGE -> {
-                if ((grantResults.isNotEmpty() && grantResults[0] != PackageManager.PERMISSION_GRANTED)) {
+                if ((grantResults.isNotEmpty() && grantResults[0] != PERMISSION_GRANTED)) {
                     finish()
                 }
                 return
@@ -73,7 +78,7 @@ class MainActivity : AppCompatActivity() {
 
         importButton.setOnClickListener {
             with(Intent(Intent.ACTION_PICK)) {
-                type = "image/*"
+                type = TYPE_IMAGE
                 startActivityForResult(this, REQUEST_LOAD_PHOTO)
             }
         }
