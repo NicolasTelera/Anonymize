@@ -4,7 +4,6 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Rect
-import android.graphics.drawable.BitmapDrawable
 import android.renderscript.*
 import android.util.AttributeSet
 import android.view.View
@@ -19,24 +18,30 @@ import com.google.firebase.ml.vision.face.FirebaseVisionFaceDetectorOptions
 /**
  * TODO :
  * - displayed blurred image is a preview, apply same blur to original bitmap size when save
+ *      --> rectangles are computed from scaled bitmap, save original size rectangle and apply with scalefactor
  * - round blurred part
+ * - add loader on face detection
  */
+
+data class SrcContainer(
+        val srcBitmap: Bitmap,
+        val scaledBitmap: Bitmap
+)
 
 private data class FaceRectangle(
         val bounds: Rect,
         val rotationX: Float,
         val rotationY: Float,
-        var isApplied: Boolean = false,
         var shouldBeBlurred: Boolean = false
-) {
-    fun shouldBeApplied() = !isApplied && shouldBeBlurred
-}
+)
 
 class BlurContainer(context: Context, attrsSet: AttributeSet) : RelativeLayout(context, attrsSet) {
 
     private val imageView = BlurImageView()
     private val rectangleList = mutableListOf<FaceRectangle>()
     private var srcBitmap: Bitmap? = null
+    private var scaledBitmap: Bitmap? = null
+    private var bitmapScaleFactor: Float = 0f
 
     private val detector = FirebaseVision.getInstance().getVisionFaceDetector(
             FirebaseVisionFaceDetectorOptions.Builder()
@@ -48,14 +53,25 @@ class BlurContainer(context: Context, attrsSet: AttributeSet) : RelativeLayout(c
                     .build()
     )
 
-    fun getModifiedImage(): Bitmap = (imageView.drawable as BitmapDrawable).bitmap
-
-    fun setImageToBlur(bitmap: Bitmap) {
+    fun setImageToBlur(container: SrcContainer) {
         resetContainer()
-        with(bitmap) {
-            srcBitmap = this
-            imageView.updateImage()
-        }
+        bitmapScaleFactor = container.scaledBitmap.width.toFloat() / container.srcBitmap.width.toFloat()
+        srcBitmap = container.srcBitmap
+        scaledBitmap = container.scaledBitmap
+        imageView.updateImage()
+    }
+
+    fun getFinalImage(): Bitmap? {
+        srcBitmap?.let { srcBitmap ->
+            var src = srcBitmap.copy(Bitmap.Config.ARGB_8888, false)
+            rectangleList.forEach {
+                if (it.shouldBeBlurred) {
+                    //TODO : here resize bounds
+                    src = applyBlur(src, it.bounds, 5)
+                }
+            }
+            return src
+        } ?: return null
     }
 
     private fun resetContainer() {
@@ -65,7 +81,7 @@ class BlurContainer(context: Context, attrsSet: AttributeSet) : RelativeLayout(c
     }
 
     private fun detectFaces() {
-        srcBitmap?.let { bitmap ->
+        scaledBitmap?.let { bitmap ->
             detector.detectInImage(FirebaseVisionImage.fromBitmap(bitmap))
                     .addOnSuccessListener { processDetectedFaces(it) }
         }
@@ -105,6 +121,29 @@ class BlurContainer(context: Context, attrsSet: AttributeSet) : RelativeLayout(c
         }
     }
 
+    private fun applyBlur(src: Bitmap, bounds: Rect, iterations: Int): Bitmap {
+        val output = Bitmap.createScaledBitmap(src, src.width, src.height, false)
+        val rs = RenderScript.create(context)
+        val script = ScriptIntrinsicBlur.create(rs, Element.U8_4(rs))
+        val inAlloc = Allocation.createFromBitmap(rs, src,
+                Allocation.MipmapControl.MIPMAP_NONE, Allocation.USAGE_GRAPHICS_TEXTURE)
+        val outAlloc = Allocation.createFromBitmap(rs, output)
+        val launchOptions = with(bounds) {
+            Script.LaunchOptions().apply {
+                setX(left, right)
+                setY(top, bottom)
+            }
+        }
+        script.apply {
+            setRadius(25f)
+            setInput(inAlloc)
+            forEach(outAlloc, launchOptions)
+        }
+        outAlloc.copyTo(output)
+        rs.destroy()
+        return if (iterations == 0) output else applyBlur(output, bounds, iterations - 1)
+    }
+
     private inner class BlurImageView : ImageView(context) {
 
         var isProcessed = false
@@ -124,40 +163,19 @@ class BlurContainer(context: Context, attrsSet: AttributeSet) : RelativeLayout(c
         }
 
         fun updateImage() {
-            srcBitmap?.let { setImageBitmap(it) }
+            scaledBitmap?.let { setImageBitmap(it) }
         }
 
         fun updateBlurredZones() {
-            srcBitmap?.let { srcBitmap ->
+            scaledBitmap?.let { srcBitmap ->
                 var src = srcBitmap.copy(Bitmap.Config.ARGB_8888, false)
                 rectangleList.forEach {
-                    if (it.shouldBeApplied()) src = applyBlur(src, it.bounds, 5)
+                    if (it.shouldBeBlurred) {
+                        src = applyBlur(src, it.bounds, 5)
+                    }
                 }
                 setImageBitmap(src)
             }
-        }
-
-        private fun applyBlur(src: Bitmap, bounds: Rect, iterations: Int): Bitmap {
-            val output = Bitmap.createScaledBitmap(src, src.width, src.height, false)
-            val rs = RenderScript.create(context)
-            val script = ScriptIntrinsicBlur.create(rs, Element.U8_4(rs))
-            val inAlloc = Allocation.createFromBitmap(rs, src,
-                    Allocation.MipmapControl.MIPMAP_NONE, Allocation.USAGE_GRAPHICS_TEXTURE)
-            val outAlloc = Allocation.createFromBitmap(rs, output)
-            val launchOptions = with(bounds) {
-                Script.LaunchOptions().apply {
-                    setX(left, right)
-                    setY(top, bottom)
-                }
-            }
-            script.apply {
-                setRadius(25f)
-                setInput(inAlloc)
-                forEach(outAlloc, launchOptions)
-            }
-            outAlloc.copyTo(output)
-            rs.destroy()
-            return if (iterations == 0) output else applyBlur(output, bounds, iterations - 1)
         }
     }
 }

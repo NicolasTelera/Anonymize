@@ -4,13 +4,13 @@ import android.Manifest
 import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager.PERMISSION_GRANTED
-import android.graphics.Bitmap
 import android.os.Bundle
 import android.provider.MediaStore
 import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
 import android.support.v7.app.AppCompatActivity
 import android.view.View
+import android.widget.Toast
 import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
@@ -84,12 +84,18 @@ class MainActivity : AppCompatActivity() {
         }
 
         saveButton.setOnClickListener {
-            fileManager.saveModifiedBitmap(blurViewGroup.getModifiedImage())
+            blurViewGroup.getFinalImage()?.let { bitmap ->
+                fileManager.saveModifiedBitmap(bitmap)
+            } ?: Toast.makeText(
+                    this,
+                    "Erreur lors de la sauvegarde de l'image",
+                    Toast.LENGTH_LONG
+            ).show()
         }
     }
 
-    private fun updateViewWithImage(bitmap: Bitmap) {
-        blurViewGroup.setImageToBlur(bitmap)
+    private fun updateViewWithImage(container: SrcContainer) {
+        blurViewGroup.setImageToBlur(container)
         saveButton.visibility = View.VISIBLE
     }
 }

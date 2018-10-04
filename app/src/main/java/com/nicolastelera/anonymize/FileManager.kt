@@ -15,6 +15,11 @@ import java.io.FileOutputStream
 import java.text.SimpleDateFormat
 import java.util.*
 
+/**
+ * TODO :
+ * - add loader on save
+ */
+
 class FileManager(private val context: Context) {
 
     companion object {
@@ -34,17 +39,18 @@ class FileManager(private val context: Context) {
             createImageFile()
     )
 
-    fun getPictureFromPath(targetWidth: Int): Bitmap = getPictureFromUri(
+    fun getPictureFromPath(targetWidth: Int): SrcContainer = getPictureFromUri(
             Uri.fromFile(File(currentPhotoPath)),
             targetWidth
     )
 
-    fun getPictureFromUri(uri: Uri, targetWidth: Int): Bitmap {
+    fun getPictureFromUri(uri: Uri, targetWidth: Int): SrcContainer {
         val src = BitmapFactory.decodeStream(context.contentResolver.openInputStream(uri))
-        return getOrientationFromUri(uri).let { orientation ->
+        val scaledBitmap = getOrientationFromUri(uri).let { orientation ->
             if (orientation <= 0) createScaledBitmap(src, targetWidth)
             else createRotatedBitmap(src, targetWidth, orientation)
         }
+        return SrcContainer(src, scaledBitmap)
     }
 
     private fun createRotatedBitmap(src: Bitmap, targetWidth: Int, orientation: Int): Bitmap {
