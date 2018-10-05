@@ -17,8 +17,7 @@ import com.google.firebase.ml.vision.face.FirebaseVisionFaceDetectorOptions
 
 /**
  * TODO :
- * - displayed blurred image is a preview, apply same blur to original bitmap size when save
- *      --> rectangles are computed from scaled bitmap, save original size rectangle and apply with scalefactor
+ * - try a way to adapt final blur to preview blur intensity
  * - round blurred part
  * - add loader on face detection
  */
@@ -33,15 +32,27 @@ private data class FaceRectangle(
         val rotationX: Float,
         val rotationY: Float,
         var shouldBeBlurred: Boolean = false
-)
+) {
+    fun toScaledRect(scaleFactor: Float) = Rect(
+            (bounds.left * scaleFactor).toInt(),
+            (bounds.top * scaleFactor).toInt(),
+            (bounds.right * scaleFactor).toInt(),
+            (bounds.bottom * scaleFactor).toInt()
+    )
+}
 
 class BlurContainer(context: Context, attrsSet: AttributeSet) : RelativeLayout(context, attrsSet) {
+
+    companion object {
+        private const val PREVIEW_BLUR_INTENSITY = 5
+        private const val FINAL_BLUR_INTENSITY = 20
+    }
 
     private val imageView = BlurImageView()
     private val rectangleList = mutableListOf<FaceRectangle>()
     private var srcBitmap: Bitmap? = null
     private var scaledBitmap: Bitmap? = null
-    private var bitmapScaleFactor: Float = 0f
+    private var srcScaleFactor: Float = 0f
 
     private val detector = FirebaseVision.getInstance().getVisionFaceDetector(
             FirebaseVisionFaceDetectorOptions.Builder()
@@ -55,7 +66,7 @@ class BlurContainer(context: Context, attrsSet: AttributeSet) : RelativeLayout(c
 
     fun setImageToBlur(container: SrcContainer) {
         resetContainer()
-        bitmapScaleFactor = container.scaledBitmap.width.toFloat() / container.srcBitmap.width.toFloat()
+        srcScaleFactor = container.scaledBitmap.width.toFloat() / container.srcBitmap.width.toFloat()
         srcBitmap = container.srcBitmap
         scaledBitmap = container.scaledBitmap
         imageView.updateImage()
@@ -66,8 +77,7 @@ class BlurContainer(context: Context, attrsSet: AttributeSet) : RelativeLayout(c
             var src = srcBitmap.copy(Bitmap.Config.ARGB_8888, false)
             rectangleList.forEach {
                 if (it.shouldBeBlurred) {
-                    //TODO : here resize bounds
-                    src = applyBlur(src, it.bounds, 5)
+                    src = applyBlur(src, it.bounds, FINAL_BLUR_INTENSITY)
                 }
             }
             return src
@@ -81,7 +91,7 @@ class BlurContainer(context: Context, attrsSet: AttributeSet) : RelativeLayout(c
     }
 
     private fun detectFaces() {
-        scaledBitmap?.let { bitmap ->
+        srcBitmap?.let { bitmap ->
             detector.detectInImage(FirebaseVisionImage.fromBitmap(bitmap))
                     .addOnSuccessListener { processDetectedFaces(it) }
         }
@@ -102,9 +112,12 @@ class BlurContainer(context: Context, attrsSet: AttributeSet) : RelativeLayout(c
 
     private fun addRectangles() {
         val scaleFactor = imageView.width.toFloat() / this@BlurContainer.width.toFloat()
-        rectangleList.forEach { rect ->
+        rectangleList.forEach { faceRect ->
+
+            val rect = faceRect.toScaledRect(srcScaleFactor)
+
             View.inflate(context, R.layout.bordered_layout, null).apply {
-                with(rect.bounds) {
+                with(rect) {
                     x = left.toFloat() * scaleFactor
                     y = top.toFloat() * scaleFactor
                     layoutParams = LinearLayout.LayoutParams(
@@ -112,7 +125,7 @@ class BlurContainer(context: Context, attrsSet: AttributeSet) : RelativeLayout(c
                             (height() * scaleFactor).toInt()
                     )
                     setOnClickListener {
-                        rect.shouldBeBlurred = !rect.shouldBeBlurred
+                        faceRect.shouldBeBlurred = !faceRect.shouldBeBlurred
                         imageView.updateBlurredZones()
                     }
                 }
@@ -169,9 +182,9 @@ class BlurContainer(context: Context, attrsSet: AttributeSet) : RelativeLayout(c
         fun updateBlurredZones() {
             scaledBitmap?.let { srcBitmap ->
                 var src = srcBitmap.copy(Bitmap.Config.ARGB_8888, false)
-                rectangleList.forEach {
-                    if (it.shouldBeBlurred) {
-                        src = applyBlur(src, it.bounds, 5)
+                rectangleList.forEach { faceRect ->
+                    if (faceRect.shouldBeBlurred) {
+                        src = applyBlur(src, faceRect.toScaledRect(srcScaleFactor), PREVIEW_BLUR_INTENSITY)
                     }
                 }
                 setImageBitmap(src)
