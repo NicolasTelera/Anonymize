@@ -9,16 +9,10 @@ import android.net.Uri
 import android.os.Environment
 import android.provider.MediaStore
 import android.support.v4.content.FileProvider
-import android.widget.Toast
 import java.io.File
 import java.io.FileOutputStream
 import java.text.SimpleDateFormat
 import java.util.*
-
-/**
- * TODO :
- * - add loader on save
- */
 
 class FileManager(private val context: Context) {
 
@@ -70,22 +64,24 @@ class FileManager(private val context: Context) {
         }
     }
 
-    fun saveModifiedBitmap(bitmap: Bitmap) {
-        val type = "${Environment.DIRECTORY_PICTURES}${File.separator}$APP_DIRECTORY_PICTURES"
-        val path = Environment.getExternalStoragePublicDirectory(type)
-        path.mkdirs()
-        val file = File(path, "$currentPhotoName$JPG_EXTENSION")
-        if (file.exists()) file.delete()
-        try {
-            val out = FileOutputStream(file)
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, out)
-            out.flush()
-            out.close()
-            Toast.makeText(context, context.getString(R.string.picture_saved), Toast.LENGTH_SHORT).show()
-        } catch (e: Exception) {
-            e.printStackTrace()
-            Toast.makeText(context, context.getString(R.string.picture_not_saved), Toast.LENGTH_SHORT).show()
-        }
+    fun saveModifiedBitmap(bitmap: Bitmap?): Boolean {
+        return bitmap?.let {
+            val type = "${Environment.DIRECTORY_PICTURES}${File.separator}$APP_DIRECTORY_PICTURES"
+            val path = Environment.getExternalStoragePublicDirectory(type)
+            path.mkdirs()
+            val file = File(path, "$currentPhotoName$JPG_EXTENSION")
+            if (file.exists()) file.delete()
+            try {
+                val out = FileOutputStream(file)
+                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, out)
+                out.flush()
+                out.close()
+                true
+            } catch (e: Exception) {
+                e.printStackTrace()
+                false
+            }
+        } ?: false
     }
 
     private fun createImageFile(): File {

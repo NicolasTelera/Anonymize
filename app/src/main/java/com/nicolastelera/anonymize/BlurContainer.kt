@@ -19,7 +19,6 @@ import com.google.firebase.ml.vision.face.FirebaseVisionFaceDetectorOptions
  * TODO :
  * - try a way to adapt final blur to preview blur intensity
  * - round blurred part
- * - add loader on face detection
  */
 
 data class SrcContainer(

@@ -6,6 +6,7 @@ import android.content.Intent
 import android.content.pm.PackageManager.PERMISSION_GRANTED
 import android.os.Bundle
 import android.provider.MediaStore
+import android.support.annotation.StringRes
 import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
 import android.support.v7.app.AppCompatActivity
@@ -84,14 +85,19 @@ class MainActivity : AppCompatActivity() {
         }
 
         saveButton.setOnClickListener {
-            blurViewGroup.getFinalImage()?.let { bitmap ->
-                fileManager.saveModifiedBitmap(bitmap)
-            } ?: Toast.makeText(
-                    this,
-                    "Erreur lors de la sauvegarde de l'image",
-                    Toast.LENGTH_LONG
-            ).show()
+            saveGroup.visibility = View.VISIBLE
+            val isSuccessful = blurViewGroup.getFinalImage()
+            if (fileManager.saveModifiedBitmap(isSuccessful)) {
+                displaySaveResult(R.string.picture_saved)
+            } else {
+                displaySaveResult(R.string.picture_not_saved)
+            }
         }
+    }
+
+    private fun displaySaveResult(@StringRes stringId: Int) {
+        saveGroup.visibility = View.GONE
+        Toast.makeText(this, getString(stringId), Toast.LENGTH_SHORT).show()
     }
 
     private fun updateViewWithImage(container: SrcContainer) {
