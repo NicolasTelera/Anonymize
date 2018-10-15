@@ -2,7 +2,8 @@
 
 buildscript {
 
-    ext.kotlin = "1.3.0-rc-116"
+    ext.kotlin = "1.3.0-rc-146"
+    ext.support = "27.1.1"
 
     repositories {
         google()
@@ -12,7 +13,7 @@ buildscript {
         }
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.3.0-alpha12'
+        classpath 'com.android.tools.build:gradle:3.3.0-alpha13'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin"
         classpath 'com.google.gms:google-services:4.0.1'
         // NOTE: Do not place your application dependencies here; they belong
@@ -43,8 +44,9 @@ allprojects {
         kotlinStdLib = "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin"
 
         // Support Lib
-        appCompat = "com.android.support:appcompat-v7:27.1.1"
-        exifInterface = "com.android.support:exifinterface:27.1.1"
+        appCompat = "com.android.support:appcompat-v7:$support"
+        design = "com.android.support:design:$support"
+        exifInterface = "com.android.support:exifinterface:$support"
         constraintLayout = "com.android.support.constraint:constraint-layout:1.1.2"
 
         // Firebase

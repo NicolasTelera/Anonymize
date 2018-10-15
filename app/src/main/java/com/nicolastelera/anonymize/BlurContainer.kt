@@ -17,7 +17,7 @@ import com.google.firebase.ml.vision.face.FirebaseVisionFaceDetectorOptions
 
 /**
  * TODO :
- * - try a way to adapt final blur to preview blur intensity
+ * - adapt final blur to preview blur intensity
  * - round blurred part
  */
 
@@ -28,8 +28,6 @@ data class SrcContainer(
 
 private data class FaceRectangle(
         val bounds: Rect,
-        val rotationX: Float,
-        val rotationY: Float,
         var shouldBeBlurred: Boolean = false
 ) {
     fun toScaledRect(scaleFactor: Float) = Rect(
@@ -97,15 +95,7 @@ class BlurContainer(context: Context, attrsSet: AttributeSet) : RelativeLayout(c
     }
 
     private fun processDetectedFaces(faces: List<FirebaseVisionFace>) {
-        faces.forEach { face ->
-            with(face) {
-                rectangleList.add(FaceRectangle(
-                        boundingBox,
-                        headEulerAngleY,
-                        headEulerAngleZ
-                ))
-            }
-        }
+        faces.forEach { rectangleList.add(FaceRectangle(it.boundingBox)) }
         addRectangles()
     }
 

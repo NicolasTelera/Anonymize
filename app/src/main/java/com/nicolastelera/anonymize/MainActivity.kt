@@ -7,11 +7,11 @@ import android.content.pm.PackageManager.PERMISSION_GRANTED
 import android.os.Bundle
 import android.provider.MediaStore
 import android.support.annotation.StringRes
+import android.support.design.widget.Snackbar
 import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
 import android.support.v7.app.AppCompatActivity
 import android.view.View
-import android.widget.Toast
 import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
@@ -85,9 +85,8 @@ class MainActivity : AppCompatActivity() {
         }
 
         saveButton.setOnClickListener {
-            saveGroup.visibility = View.VISIBLE
-            val isSuccessful = blurViewGroup.getFinalImage()
-            if (fileManager.saveModifiedBitmap(isSuccessful)) {
+            val finalBitmap = blurViewGroup.getFinalImage()
+            if (fileManager.saveModifiedBitmap(finalBitmap)) {
                 displaySaveResult(R.string.picture_saved)
             } else {
                 displaySaveResult(R.string.picture_not_saved)
@@ -96,8 +95,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun displaySaveResult(@StringRes stringId: Int) {
-        saveGroup.visibility = View.GONE
-        Toast.makeText(this, getString(stringId), Toast.LENGTH_SHORT).show()
+        Snackbar.make(container, getString(stringId), Snackbar.LENGTH_SHORT).show()
     }
 
     private fun updateViewWithImage(container: SrcContainer) {

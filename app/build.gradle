@@ -28,6 +28,7 @@ dependencies {
 
     // Support Libraries
     implementation parent.ext.appCompat
+    implementation parent.ext.design
     implementation parent.ext.constraintLayout
     implementation parent.ext.exifInterface
 

@@ -24,7 +24,6 @@ class FileManager(private val context: Context) {
         private const val APP_DIRECTORY_PICTURES = "/Anonymize"
     }
 
-    private var currentPhotoName: String? = null
     private var currentPhotoPath: String? = null
 
     fun createPhotoUri(): Uri = FileProvider.getUriForFile(
@@ -69,7 +68,7 @@ class FileManager(private val context: Context) {
             val type = "${Environment.DIRECTORY_PICTURES}${File.separator}$APP_DIRECTORY_PICTURES"
             val path = Environment.getExternalStoragePublicDirectory(type)
             path.mkdirs()
-            val file = File(path, "$currentPhotoName$JPG_EXTENSION")
+            val file = File(path, "${createUniqueFileName()}$JPG_EXTENSION")
             if (file.exists()) file.delete()
             try {
                 val out = FileOutputStream(file)
@@ -85,12 +84,16 @@ class FileManager(private val context: Context) {
     }
 
     private fun createImageFile(): File {
-        val timeStamp = SimpleDateFormat(DATE_FORMAT_PATTERN, Locale.FRANCE).format(Date())
-        currentPhotoName = "$JPEG_PREFIX$timeStamp"
+        val currentPhotoName = createUniqueFileName()
         val storageDir = context.getExternalFilesDir(Environment.DIRECTORY_PICTURES)
         val image = File.createTempFile(currentPhotoName, JPG_EXTENSION, storageDir)
         currentPhotoPath = image.absolutePath
         return image
+    }
+
+    private fun createUniqueFileName(): String {
+        val timeStamp = SimpleDateFormat(DATE_FORMAT_PATTERN, Locale.FRANCE).format(Date())
+        return "$JPEG_PREFIX$timeStamp"
     }
 
     @SuppressLint("Recycle")
