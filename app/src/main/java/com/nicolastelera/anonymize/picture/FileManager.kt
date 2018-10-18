@@ -1,4 +1,4 @@
-package com.nicolastelera.anonymize
+package com.nicolastelera.anonymize.picture
 
 import android.annotation.SuppressLint
 import android.content.Context
@@ -28,7 +28,7 @@ class FileManager(private val context: Context) {
 
     fun createPhotoUri(): Uri = FileProvider.getUriForFile(
             context,
-            FILE_PROVIDER_AUTHORITY,
+        FILE_PROVIDER_AUTHORITY,
             createImageFile()
     )
 
@@ -86,13 +86,15 @@ class FileManager(private val context: Context) {
     private fun createImageFile(): File {
         val currentPhotoName = createUniqueFileName()
         val storageDir = context.getExternalFilesDir(Environment.DIRECTORY_PICTURES)
-        val image = File.createTempFile(currentPhotoName, JPG_EXTENSION, storageDir)
+        val image = File.createTempFile(currentPhotoName,
+            JPG_EXTENSION, storageDir)
         currentPhotoPath = image.absolutePath
         return image
     }
 
     private fun createUniqueFileName(): String {
-        val timeStamp = SimpleDateFormat(DATE_FORMAT_PATTERN, Locale.FRANCE).format(Date())
+        val timeStamp = SimpleDateFormat(
+            DATE_FORMAT_PATTERN, Locale.FRANCE).format(Date())
         return "$JPEG_PREFIX$timeStamp"
     }
 

@@ -1,4 +1,4 @@
-package com.nicolastelera.anonymize
+package com.nicolastelera.anonymize.picture
 
 import android.content.Context
 import android.graphics.Bitmap
@@ -14,6 +14,7 @@ import com.google.firebase.ml.vision.FirebaseVision
 import com.google.firebase.ml.vision.common.FirebaseVisionImage
 import com.google.firebase.ml.vision.face.FirebaseVisionFace
 import com.google.firebase.ml.vision.face.FirebaseVisionFaceDetectorOptions
+import com.nicolastelera.anonymize.R
 
 /**
  * TODO :
@@ -76,7 +77,8 @@ class BlurContainer(context: Context, attrsSet: AttributeSet) : RelativeLayout(c
             var src = srcBitmap.copy(Bitmap.Config.ARGB_8888, false)
             rectangleList.forEach {
                 if (it.shouldBeBlurred) {
-                    src = applyBlur(src, it.bounds, FINAL_BLUR_INTENSITY)
+                    src = applyBlur(src, it.bounds,
+                        FINAL_BLUR_INTENSITY)
                 }
             }
             return src
@@ -97,7 +99,8 @@ class BlurContainer(context: Context, attrsSet: AttributeSet) : RelativeLayout(c
     }
 
     private fun processDetectedFaces(faces: List<FirebaseVisionFace>) {
-        faces.forEach { rectangleList.add(FaceRectangle(it.boundingBox)) }
+        faces.forEach { rectangleList.add(
+            FaceRectangle(it.boundingBox)) }
         addRectangles()
     }
 
@@ -175,7 +178,8 @@ class BlurContainer(context: Context, attrsSet: AttributeSet) : RelativeLayout(c
                 var src = srcBitmap.copy(Bitmap.Config.ARGB_8888, false)
                 rectangleList.forEach { faceRect ->
                     if (faceRect.shouldBeBlurred) {
-                        src = applyBlur(src, faceRect.toScaledRect(srcScaleFactor), PREVIEW_BLUR_INTENSITY)
+                        src = applyBlur(src, faceRect.toScaledRect(srcScaleFactor),
+                            PREVIEW_BLUR_INTENSITY)
                     }
                 }
                 setImageBitmap(src)

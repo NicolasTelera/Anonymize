@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.nicolastelera.anonymize">
+<manifest package="com.nicolastelera.anonymize"
+          xmlns:android="http://schemas.android.com/apk/res/android">
 
     <uses-feature
         android:name="android.hardware.camera"
-        android:required="true" />
+        android:required="true"/>
 
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
 
     <application
         android:allowBackup="true"
@@ -18,27 +18,31 @@
 
         <meta-data
             android:name="com.google.firebase.ml.vision.DEPENDENCIES"
-            android:value="face" />
+            android:value="face"/>
 
         <activity
-            android:name=".MainActivity"
+            android:name=".picture.PictureActivity"
+            android:screenOrientation="portrait"/>
+
+        <activity
+            android:name=".realtime.RealTimeActivity"
             android:screenOrientation="portrait">
             <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <action android:name="android.intent.action.VIEW" />
+                <action android:name="android.intent.action.MAIN"/>
+                <action android:name="android.intent.action.VIEW"/>
 
-                <category android:name="android.intent.category.LAUNCHER" />
+                <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
 
         <provider
-            android:name="android.support.v4.content.FileProvider"
             android:authorities="com.nicolastelera.anonymize.fileprovider"
             android:exported="false"
-            android:grantUriPermissions="true">
+            android:grantUriPermissions="true"
+            android:name="android.support.v4.content.FileProvider">
             <meta-data
                 android:name="android.support.FILE_PROVIDER_PATHS"
-                android:resource="@xml/file_paths" />
+                android:resource="@xml/file_paths"/>
         </provider>
 
     </application>

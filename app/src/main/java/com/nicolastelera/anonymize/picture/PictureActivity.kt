@@ -1,20 +1,21 @@
-package com.nicolastelera.anonymize
+package com.nicolastelera.anonymize.picture
 
 import android.Manifest
 import android.app.Activity
 import android.content.Intent
-import android.content.pm.PackageManager.PERMISSION_GRANTED
 import android.os.Bundle
 import android.provider.MediaStore
 import android.support.annotation.StringRes
 import android.support.design.widget.Snackbar
 import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
+import android.support.v4.content.PermissionChecker.PERMISSION_GRANTED
 import android.support.v7.app.AppCompatActivity
 import android.view.View
-import kotlinx.android.synthetic.main.activity_main.*
+import com.nicolastelera.anonymize.R
+import kotlinx.android.synthetic.main.activity_picture.*
 
-class MainActivity : AppCompatActivity() {
+class PictureActivity : AppCompatActivity() {
 
     companion object {
         private const val REQUEST_WRITE_EXTERNAL_STORAGE = 1664
@@ -27,7 +28,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        setContentView(R.layout.activity_picture)
         checkForUserPermission()
         initButtonsListeners()
     }
@@ -47,17 +48,18 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun checkForUserPermission() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PERMISSION_GRANTED) {
+        if (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE) != PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this,
-                    arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
-                    REQUEST_WRITE_EXTERNAL_STORAGE)
+                arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
+                REQUEST_WRITE_EXTERNAL_STORAGE)
         }
     }
 
     override fun onRequestPermissionsResult(
-            requestCode: Int,
-            permissions: Array<out String>,
-            grantResults: IntArray
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
     ) {
         when (requestCode) {
             REQUEST_WRITE_EXTERNAL_STORAGE -> {
@@ -73,14 +75,16 @@ class MainActivity : AppCompatActivity() {
         pictureButton.setOnClickListener {
             with(Intent(MediaStore.ACTION_IMAGE_CAPTURE)) {
                 putExtra(MediaStore.EXTRA_OUTPUT, fileManager.createPhotoUri())
-                startActivityForResult(this, REQUEST_TAKE_PHOTO)
+                startActivityForResult(this,
+                    REQUEST_TAKE_PHOTO)
             }
         }
 
         importButton.setOnClickListener {
             with(Intent(Intent.ACTION_PICK)) {
                 type = TYPE_IMAGE
-                startActivityForResult(this, REQUEST_LOAD_PHOTO)
+                startActivityForResult(this,
+                    REQUEST_LOAD_PHOTO)
             }
         }
 
