@@ -19,6 +19,8 @@ import com.google.firebase.ml.vision.face.FirebaseVisionFaceDetectorOptions
  * TODO :
  * - adapt final blur to preview blur intensity
  * - round blurred part
+ * - display face detection in real time to known which faces will be recognized
+ * https://firebase.google.com/docs/ml-kit/detect-faces
  */
 
 data class SrcContainer(
