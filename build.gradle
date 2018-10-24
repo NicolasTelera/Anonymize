@@ -42,7 +42,6 @@ allprojects {
 
         // Kotlin
         kotlinStdLib = "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin"
-        kotlinCoroutines = "org.jetbrains.kotlinx:kotlinx-coroutines-android:0.24.0"
 
         // Support Lib
         appCompat = "com.android.support:appcompat-v7:$support"
@@ -53,12 +52,6 @@ allprojects {
         // Firebase
         firebaseCore = "com.google.firebase:firebase-core:16.0.1"
         firebaseVision = "com.google.firebase:firebase-ml-vision:17.0.0"
-
-        // CameraKit
-        cameraKit = "com.camerakit:camerakit:1.0.0-beta3.9"
-
-        // BlurKit
-        blurKit = "io.alterac.blurkit:blurkit:1.0.0"
 
         // Testing
         junit = "junit:junit:4.12"

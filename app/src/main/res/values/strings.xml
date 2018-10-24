@@ -5,4 +5,8 @@
     <string name="picture_saved">Photo enregistrée !</string>
     <string name="picture_not_saved">Photo non enregistrée…</string>
     <string name="import_picture">import picture</string>
+
+
+    <string name="request_permission">This sample needs camera permission.</string>
+    <string name="camera_error">This device doesn\'t support Camera2 API.</string>
 </resources>

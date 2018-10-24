@@ -25,7 +25,6 @@ dependencies {
 
     // Kotlin
     implementation parent.ext.kotlinStdLib
-    implementation parent.ext.kotlinCoroutines
 
     // Support Libraries
     implementation parent.ext.appCompat
@@ -36,12 +35,6 @@ dependencies {
     // Firebase
     implementation parent.ext.firebaseCore
     implementation parent.ext.firebaseVision
-
-    // CameraKit
-    implementation parent.ext.cameraKit
-
-    // BlurKit
-    implementation parent.ext.blurKit
 
     // Testing
     testImplementation parent.ext.junit
